@@ -1,6 +1,6 @@
 const axios = require('axios');
-const PUSHPLUS = process.env.PUSHPLUS;
 const COOKIE = process.env.COOKIE;
+const Serverkey = process.env.ServerKey;
 
 const checkCOOKIE = async () => {
     if (!COOKIE || !COOKIE.length) {
@@ -49,7 +49,7 @@ const checkIn = async () => {
 };
 
 const sendMsg = async (msg, code) => {
-    var token = PUSHPLUS;
+    var token = ServerKey;
     if (!token) {
         return;
     }
@@ -60,27 +60,25 @@ const sendMsg = async (msg, code) => {
         msg = `📢您已签到，无需重复签到`;
     }
     const data = {
-        token,
         title: '看雪论坛签到',
         content: msg,
         template: 'json'
     };
     console.log('pushData', {
-        ...data,
-        token: data.token.replace(/^(.{1,4})(.*)(.{4,})$/, (_, a, b, c) => a + b.replace(/./g, '*') + c)
+        ...data
     });
 
     return axios({
         method: 'post',
-        url: `http://www.pushplus.plus/send`,
+        url: `https://sc.ftqq.com/${SCKEY}.send`,
         data
     }).catch((error) => {
         if (error.response) {
             // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
-            console.warn(`PUSHPLUS推送 请求失败，状态码：${error.response.status}`);
+            console.warn(`Server酱推送 请求失败，状态码：${error.response.status}`);
         } else if (error.request) {
             // 请求已经成功发起，但没有收到响应
-            console.warn('PUSHPLUS推送 网络错误');
+            console.warn('Server酱推送 网络错误');
         } else {
             // 发送请求时出了点问题
             console.log('Axios Error', error.message);
@@ -99,14 +97,14 @@ const start = async () => {
         const message = checkIn_result?.data?.message;
         const code = checkIn_result?.data?.code;
         if (code == 0 || message == '您今日已签到成功') {
-            if (code == 0) console.log('checkin成功');
+            if (code == 0) console.log('loginin成功');
             else console.log(message);
-            if (!PUSHPLUS || !PUSHPLUS.length){
-                console.warn('不存在 PUSHPLUS ，请重新检查');
+            if (!ServerKey || !ServerKey.length){
+                console.warn('不存在 ServerKey ，请重新检查');
             }
             else {
                 const pushResult = (await sendMsg(message, code))?.data?.msg;
-                console.log('PUSHPLUS 推送结果', pushResult);
+                console.log('Server酱 推送结果', pushResult);
             }
         }
         else{
